@@ -7,6 +7,7 @@ import (
 	"net/url"
 	"sync"
 	"time"
+	"encoding/json"
 
 	"github.com/containrrr/shoutrrr"
 	"github.com/pocketbase/dbx"
@@ -171,6 +172,22 @@ func (am *AlertManager) SendShoutrrrAlert(notificationUrl, title, message, link,
 	} else {
 		// else add link directly to the message
 		message += "\n\n" + link
+	}
+
+	// self-test
+	if scheme[:7] == "generic" {
+		msg_data := map[string]interface{}{
+			"title": title,
+			"msg": message,
+			"linkText": linkText,
+		}
+
+		jsonBytes, err := json.Marshal(msg_data)
+		if err != nil {
+			am.app.Logger().Error("Webhook Json failed", err)
+		} else {
+			message = string(jsonBytes)
+		}
 	}
 
 	// Encode the modified query parameters back into the URL
